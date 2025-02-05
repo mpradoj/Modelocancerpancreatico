@@ -9,6 +9,8 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from xgboost import XGBClassifier
 import plotly.express as px
 import plotly.graph_objects as go
+import joblib
+import os
 
 # Configuração inicial
 st.set_page_config(page_title="Dashboard de Previsão de Câncer Pancreático, Feito por Matheus Prado", layout="wide")
@@ -20,7 +22,7 @@ st.subheader("🔍 Explore os dados do projeto")
 # Carregar os dados
 @st.cache_data
 def load_data():
-    df = pd.read_csv('Debernardi et al 2020 data.csv')
+    df = pd.read_csv('/home/prado/.cache/kagglehub/datasets/johnjdavisiv/urinary-biomarkers-for-pancreatic-cancer/versions/1/Debernardi et al 2020 data.csv')
     return df
 
 df = load_data()
@@ -39,8 +41,6 @@ st.header("📊 Análise Exploratória de Dados (EDA)")
 
 # Gráficos de Pares
 st.subheader("Gráficos de Pares")
-st.text("Perceba no gráfico abaixo que no LYVE1-LYVE1, notamos um aumento nos valores dos pacientes com câncer (true) comparados aos que não possuem. O plasma CA19, possui uma frequência alta para um determinado valor entre aqueles que não possuem câncer (Falso).")
-
 fig = px.scatter_matrix(
     df,
     dimensions=['REG1B', 'plasma_CA19_9', 'creatinine', 'LYVE1', 'TFF1', 'age'],
@@ -54,8 +54,6 @@ st.plotly_chart(fig)
 
 # Matriz de Correlação
 st.subheader("Matriz de Correlação")
-st.text("O LYVE1 se destaca na correlação com o diagnóstico, novamente demonstrando-se um ótimo parâmetro para o diagnóstico.")
-
 corr = df.dropna().corr()
 fig_corr = px.imshow(
     corr,
@@ -84,13 +82,20 @@ def train_model():
     grid_search.fit(X_train, y_train)
     return grid_search.best_estimator_
 
-best_model = train_model()
+# Salvar ou carregar o modelo treinado
+MODEL_FILE = "best_model.joblib"
+
+if os.path.exists(MODEL_FILE):
+    # Carregar o modelo salvo
+    best_model = joblib.load(MODEL_FILE)
+else:
+    # Treinar o modelo e salvá-lo
+    best_model = train_model()
+    joblib.dump(best_model, MODEL_FILE)
 
 # Avaliação do Modelo
 st.header("🎯 Avaliação do Modelo")
-
 y_pred = best_model.predict(X_test)
-
 st.subheader("Métricas de Desempenho")
 st.write(f"**Acurácia no conjunto de teste:** {accuracy_score(y_test, y_pred):.2f}")
 st.text("Relatório de Classificação:")
@@ -112,11 +117,8 @@ st.plotly_chart(fig_cm)
 
 # Importância das Features
 st.subheader("Importância das Features")
-st.text("Percebemos que, de fato, o LYVE1 era um importante marcador para realizar as previsões do modelo. No entanto, após o aprendizado do modelo, há uma grande importância do Plasma CA19.")
-
 importances = best_model.named_steps['xgb'].feature_importances_
 indices = np.argsort(importances)[::-1]
-
 fig_importance = go.Figure()
 fig_importance.add_trace(go.Bar(
     x=importances[indices],
@@ -134,7 +136,6 @@ st.plotly_chart(fig_importance)
 # Interface para Previsão Individual
 st.header("🔮 Faça uma Previsão Individual")
 st.subheader("Insira os valores abaixo para prever a probabilidade de câncer pancreático:")
-
 creatinine = st.number_input("Creatinine", min_value=0.0, max_value=1000.0, value=1.0)
 plasma_CA19_9 = st.number_input("Plasma CA19-9", min_value=0.0, max_value=10000.0, value=100.0)
 age = st.number_input("Idade", min_value=0, max_value=120, value=50)
