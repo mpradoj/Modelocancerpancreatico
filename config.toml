@@ -1,0 +1,13 @@
+[theme]
+base = "light"
+
+[ui]
+# Desativa o menu de configurações e o ícone do GitHub
+showToolbar = false
+hideTopBar = true
+
+[menuItems]
+# Remove o link para o GitHub
+about = false
+documentation = false
+reportIssue = false
