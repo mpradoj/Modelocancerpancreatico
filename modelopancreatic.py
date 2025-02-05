@@ -28,8 +28,8 @@ def load_data():
 df = load_data()
 
 # Pré-processamento dos dados
-df['diagnosis'] = df['diagnosis'] == 3  # Codificar diagnóstico como True (classe 3) ou False
-df['sex'] = df['sex'].map({'M': 1, 'F': 0})  # Codificar sexo como 1 (masculino) ou 0 (feminino)
+df['diagnosis'] = df['diagnosis'] == 3  
+df['sex'] = df['sex'].map({'M': 1, 'F': 0})  
 df = df[['creatinine', 'plasma_CA19_9', 'age', 'sex', 'LYVE1', 'REG1B', 'TFF1', 'diagnosis']].copy()
 
 # Mostrar os dados brutos
