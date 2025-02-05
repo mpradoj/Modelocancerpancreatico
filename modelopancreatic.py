@@ -20,7 +20,7 @@ st.subheader("🔍 Explore os dados do projeto")
 # Carregar os dados
 @st.cache_data
 def load_data():
-    df = pd.read_csv('/home/prado/.cache/kagglehub/datasets/johnjdavisiv/urinary-biomarkers-for-pancreatic-cancer/versions/1/Debernardi et al 2020 data.csv')
+    df = pd.read_csv('Debernardi et al 2020 data.csv')
     return df
 
 df = load_data()
